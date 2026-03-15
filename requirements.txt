@@ -1,0 +1,22 @@
+# requirements.txt
+# Drums-to-MIDI project dependencies
+# Install into drum310 conda environment:
+#   conda activate drum310
+#   pip install -r requirements.txt
+
+# Core ML
+torch
+nnAudio
+
+# Audio
+soundfile
+scipy
+
+# Data
+numpy
+
+# Visualization
+matplotlib
+
+# MIDI output (for future use)
+mido
