@@ -7,5 +7,6 @@ src/__pycache__/
 models/
 files/
 codex_logs/
+/results/
 
 .claude/

@@ -16,15 +16,16 @@ behavior, while preserving a few practical improvements from the later refactor:
 - central `config.py` path and hyperparameter management
 - timestamped model saves for new training runs
 - resumable training checkpoint support
-- fixed seeding for repeatable train/test splits
+- contiguous holdout train/test split with a configurable gap
 - CLI inference and interactive viewing scripts
 - saved loss and F1 plots
+- separate best-loss and best-F1 checkpoint saves during training
 
 ## Baseline Model
 
-The active baseline checkpoint in this workspace is:
+The active checkpoint in this workspace is:
 
-- `models/Inline Model from Working Version-V3_reaper_midi error_drop_05_nosig_best.pth`
+- `models/drum_classifier_20260315_210518_best.pth`
 
 This checkpoint matches the current `src/model.py` architecture in this
 workspace. The model is the original narrower encoder/decoder CNN with:
@@ -122,12 +123,15 @@ python src\view.py
 ## Training Notes
 
 - training uses `MSELoss` against normalized MIDI velocity targets
+- evaluation now uses a contiguous holdout split instead of a random slice split
+- a configurable gap between train and test regions reduces near-boundary leakage
 - the default training configuration is the notebook-style baseline:
   - `BATCH_SIZE = 16`
   - `NUM_EPOCHS = 150`
   - `LEARNING_RATE = 1e-4`
   - `DROPOUT = 0.5`
 - new best-model saves are timestamped and written to `models/`
+- training saves both the best test-loss checkpoint and the best test-F1 checkpoint
 - resumable state is written to `models/checkpoint_resume.pth`
 - `files/training_loss.png` and `files/training_f1.png` are overwritten by each completed training run
 

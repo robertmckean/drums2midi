@@ -27,6 +27,12 @@ def _metric_predictions(outputs):
     return torch.clamp(outputs, 0.0, 1.0)
 
 
+# Returns a sibling checkpoint path for alternate selection criteria from the same training run.
+def _derive_checkpoint_path(model_save_path, suffix):
+    root, ext = os.path.splitext(model_save_path)
+    return f"{root}_{suffix}{ext}"
+
+
 # Full training run: builds data pipeline, trains model for NUM_EPOCHS,
 # saves best checkpoint by test loss, and generates loss/F1 plots.
 def train():
@@ -56,7 +62,9 @@ def train():
     test_losses = []
     test_f1s = []
     best_test_loss = float("inf")
+    best_test_f1 = float("-inf")
     model_save_path = None
+    best_f1_model_save_path = None
 
     if os.path.exists(config.CHECKPOINT_PATH):
         checkpoint = torch.load(config.CHECKPOINT_PATH, map_location=device)
@@ -65,17 +73,25 @@ def train():
         scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
         start_epoch = checkpoint["epoch"] + 1
         best_test_loss = checkpoint["best_test_loss"]
+        best_test_f1 = checkpoint.get("best_test_f1", float("-inf"))
         train_losses = checkpoint["train_losses"]
         test_losses = checkpoint["test_losses"]
         train_f1s = checkpoint["train_f1s"]
         test_f1s = checkpoint["test_f1s"]
         model_save_path = checkpoint["model_save_path"]
+        best_f1_model_save_path = checkpoint.get(
+            "best_f1_model_save_path",
+            _derive_checkpoint_path(model_save_path, "best_f1"),
+        )
         print(f"Resuming from epoch {start_epoch + 1}")
         print(f"Model will be saved to: {model_save_path}")
+        print(f"Best-F1 model will be saved to: {best_f1_model_save_path}")
     else:
         model_save_path = config.get_model_save_path()
+        best_f1_model_save_path = _derive_checkpoint_path(model_save_path, "best_f1")
         print("Starting fresh training run")
         print(f"Model will be saved to: {model_save_path}")
+        print(f"Best-F1 model will be saved to: {best_f1_model_save_path}")
 
     for epoch in range(start_epoch, config.NUM_EPOCHS):
         model.train()
@@ -148,6 +164,11 @@ def train():
             torch.save(model.state_dict(), model_save_path)
             print(f"  -> Saved best model (test loss: {best_test_loss:.4e})")
 
+        if test_f1 > best_test_f1:
+            best_test_f1 = test_f1
+            torch.save(model.state_dict(), best_f1_model_save_path)
+            print(f"  -> Saved best F1 model (test F1: {best_test_f1:.4f})")
+
         torch.save(
             {
                 "epoch": epoch,
@@ -155,11 +176,13 @@ def train():
                 "optimizer_state_dict": optimizer.state_dict(),
                 "scheduler_state_dict": scheduler.state_dict(),
                 "best_test_loss": best_test_loss,
+                "best_test_f1": best_test_f1,
                 "train_losses": train_losses,
                 "test_losses": test_losses,
                 "train_f1s": train_f1s,
                 "test_f1s": test_f1s,
                 "model_save_path": model_save_path,
+                "best_f1_model_save_path": best_f1_model_save_path,
             },
             config.CHECKPOINT_PATH,
         )
@@ -191,7 +214,9 @@ def train():
     plt.close()
 
     print(f"\nTraining complete. Best test loss: {best_test_loss:.4e}")
+    print(f"Best test F1: {best_test_f1:.4f}")
     print(f"Model saved to: {model_save_path}")
+    print(f"Best-F1 model saved to: {best_f1_model_save_path}")
     print(f"Plots saved to: {config.FILES_DIR}/")
 
 

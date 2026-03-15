@@ -8,7 +8,7 @@ import sys
 import numpy as np
 import soundfile as sf
 import torch
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, Subset
 
 # Add project root to path so config is importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -79,9 +79,39 @@ class AudioSliceDataset(Dataset):
         return audio_slice, midi_slice
 
 
+# Builds contiguous train/test subsets with a time gap between them.
+def _build_contiguous_split(dataset):
+    dataset_len = len(dataset)
+    gap_slices = int((config.TRAIN_TEST_GAP_MINUTES * 60) / config.SLICE_LEN_SEC)
+    usable_len = dataset_len - gap_slices
+    if usable_len < 2:
+        raise ValueError(
+            "Train/test gap is too large for the available dataset length."
+        )
+
+    train_len = int(usable_len * config.TRAIN_SPLIT)
+    test_len = usable_len - train_len
+    if train_len < 1 or test_len < 1:
+        raise ValueError(
+            "Contiguous split produced an empty train or test set."
+        )
+
+    train_indices = list(range(train_len))
+    test_start = train_len + gap_slices
+    test_indices = list(range(test_start, test_start + test_len))
+    split_info = {
+        "gap_slices": gap_slices,
+        "train_start": 0,
+        "train_end": train_len - 1,
+        "test_start": test_start,
+        "test_end": test_start + test_len - 1,
+    }
+    return Subset(dataset, train_indices), Subset(dataset, test_indices), split_info
+
+
 # Builds train/test DataLoaders from the full pipeline.
 # Calls get_list_of_midi_arrays -> process_list_of_midi_arrays -> AudioSliceDataset,
-# then splits into train/test sets according to config.TRAIN_SPLIT.
+# then creates a contiguous train block and later test block separated by a gap.
 def build_dataloaders():
     list_of_midi_arrays, num_slices = get_list_of_midi_arrays()
     list_of_processed_midi = process_list_of_midi_arrays(list_of_midi_arrays)
@@ -92,22 +122,22 @@ def build_dataloaders():
         slice_len_sec=config.SLICE_LEN_SEC,
     )
 
-    # 80/20 train/test split
-    train_len = int(len(dataset) * config.TRAIN_SPLIT)
-    test_len = len(dataset) - train_len
-
-    train_set, test_set = random_split(
-        dataset, [train_len, test_len],
-        generator=torch.Generator().manual_seed(config.RANDOM_SEED),
-    )
+    train_set, test_set, split_info = _build_contiguous_split(dataset)
 
     loader_generator = torch.Generator().manual_seed(config.RANDOM_SEED)
     train_loader = DataLoader(
         train_set, batch_size=config.BATCH_SIZE, shuffle=True, generator=loader_generator
     )
     test_loader = DataLoader(
-        test_set, batch_size=config.BATCH_SIZE, shuffle=True,
-        generator=torch.Generator().manual_seed(config.RANDOM_SEED)
+        test_set, batch_size=config.BATCH_SIZE, shuffle=False
+    )
+
+    print(
+        "Contiguous split: "
+        f"train slices {split_info['train_start']}-{split_info['train_end']}, "
+        f"gap {split_info['gap_slices']} slices "
+        f"({config.TRAIN_TEST_GAP_MINUTES} minutes), "
+        f"test slices {split_info['test_start']}-{split_info['test_end']}"
     )
 
     return train_loader, test_loader, dataset

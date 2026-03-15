@@ -22,7 +22,7 @@ MIDI_CSV_OUTPUT = os.path.join(MIDI_DIR, "reaper_GM_midi_processed.csv")
 MODEL_SAVE_PATH = os.path.join(MODELS_DIR, "drum_classifier_best.pth")
 MODEL_LOAD_PATH = os.path.join(
     MODELS_DIR,
-    "Inline Model from Working Version-V3_reaper_midi error_drop_05_nosig_best.pth",
+    "drum_classifier_20260315_210518_best.pth",
 )
 CHECKPOINT_PATH = os.path.join(MODELS_DIR, "checkpoint_resume.pth")
 
@@ -53,6 +53,7 @@ BATCH_SIZE = 16
 NUM_EPOCHS = 150
 LEARNING_RATE = 1e-4
 TRAIN_SPLIT = 0.8
+TRAIN_TEST_GAP_MINUTES = 10
 RANDOM_SEED = 42
 CLIP_VALUE = 0.5
 SCHEDULER_FACTOR = 0.1
