@@ -53,7 +53,7 @@ def main():
     print(f"Loaded model from: {config.MODEL_LOAD_PATH}")
 
     # Build dataset (same pipeline as training — needed for both X audio and Y labels)
-    list_of_midi_arrays, num_slices = get_list_of_midi_arrays()
+    list_of_midi_arrays, num_slices = get_list_of_midi_arrays(save_processed_csv=False)
     list_of_processed_midi = process_list_of_midi_arrays(list_of_midi_arrays)
 
     dataset = AudioSliceDataset(

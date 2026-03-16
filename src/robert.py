@@ -55,8 +55,9 @@ def process_midi_file(input_file_path, output_file_path, width, note_space, sec,
         midi_notes[i, 1] = np.round((row[1]) * (width-1) / slice_ticks)
         midi_notes[i, 0] = int(row[0]) * note_space
 
-    # Save the fully processed array as CSV for inspection/debugging
-    np.savetxt(output_file_path, midi_notes, delimiter=',', fmt='%d')
+    # Save the fully processed array as CSV for inspection/debugging when requested.
+    if output_file_path:
+        np.savetxt(output_file_path, midi_notes, delimiter=',', fmt='%d')
 
     # Creates a list of empty Nx5 arrays, one per slice
     def create_empty_slice_list(num_slices):

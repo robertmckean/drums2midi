@@ -22,7 +22,7 @@ MIDI_CSV_OUTPUT = os.path.join(MIDI_DIR, "reaper_GM_midi_processed.csv")
 MODEL_SAVE_PATH = os.path.join(MODELS_DIR, "drum_classifier_best.pth")
 MODEL_LOAD_PATH = os.path.join(
     MODELS_DIR,
-    "drum_classifier_20260315_210518_best.pth",
+    "drum_classifier_20260315_223300_best.pth",
 )
 CHECKPOINT_PATH = os.path.join(MODELS_DIR, "checkpoint_resume.pth")
 

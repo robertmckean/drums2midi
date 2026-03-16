@@ -18,10 +18,10 @@ from src import robert
 
 # Wraps robert.process_midi_file() with config values.
 # Returns (list_of_Nx3_arrays, num_slices) where each array has columns: note, loop_time, vel.
-def get_list_of_midi_arrays():
+def get_list_of_midi_arrays(save_processed_csv=True):
     list_of_midi_arrays, num_slices = robert.process_midi_file(
         config.MIDI_CSV_INPUT,
-        config.MIDI_CSV_OUTPUT,
+        config.MIDI_CSV_OUTPUT if save_processed_csv else None,
         width=config.STFT_WIDTH,
         note_space=config.NOTE_SPACE,
         sec=config.SLICE_LEN_SEC,
