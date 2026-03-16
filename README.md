@@ -69,6 +69,17 @@ Representative visuals are included under `examples/` for fast review without
 requiring local model or data setup. These are curated copies of training and
 inference outputs from the local working environment.
 
+## Documentation
+
+Key supporting documents:
+
+- `docs/project_summary_master.md`: concise canonical project summary
+- `docs/system_architecture.md`: pipeline and component overview
+- `docs/model_detail.md`: detailed model architecture, tensor shapes, and parameter counts
+- `docs/results/checkpoint_comparison_20260316.md`: checkpoint comparison notes
+- `docs/results/reproducibility_20260316.md`: restore and reproducibility checklist
+- `docs/presentation/drums2midi_Overview.pdf`: presentation walkthrough for mixed technical and executive audiences
+
 ## Paths And Data
 
 This workspace stores code under:
@@ -125,6 +136,8 @@ See `docs/results/reproducibility_20260316.md` for the exact checklist and
 restore steps.
 
 For a concise pipeline walkthrough, see `docs/system_architecture.md`.
+For detailed model architecture and parameter information, see
+`docs/model_detail.md`.
 
 ## Running
 

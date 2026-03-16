@@ -4,6 +4,7 @@ src/__pycache__/
 .vscode/
 *.code-workspace
 *.zip
+~$*.pptx
 AGENTS.md
 CLAUDE.md
 
@@ -15,5 +16,9 @@ planning/
 docs/plans/
 tools/
 tmp_chatgpt_context_*/
+tmp_ppt_review/
+tmp_ppt_review.zip
+docs/drums2midi_Overview.pdf
+docs/drums2midi_Overview.pptx
 
 .claude/

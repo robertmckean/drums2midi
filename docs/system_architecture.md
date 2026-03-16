@@ -96,3 +96,6 @@ For executive reviewers, it shows a defined-scope AI system executed with
 architectural discipline: constrained baseline control, explicit checkpoint
 management, documented validation, and realistic handling of reproducibility and
 generalization limits.
+
+For detailed layer, tensor-shape, and parameter-count information, see
+`docs/model_detail.md`.
