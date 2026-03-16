@@ -62,6 +62,8 @@ def plot_comparison(output, ground_truth, index):
 # then applies non-maximum suppression per note to remove phantom pre-echo hits.
 # Model output is clipped to the normalized target range before thresholding.
 def extract_midi_hits(heatmap, threshold=config.VELOCITY_THRESHOLD, nms_window=3):
+    # Thresholding is done in MIDI velocity units so printed events line up with
+    # the project’s human-readable note/time/velocity convention.
     scaled = normalize_output(heatmap) * 127
     indices = np.argwhere(scaled > threshold)
     sorted_indices = indices[indices[:, 1].argsort()]
@@ -84,6 +86,8 @@ def extract_midi_hits(heatmap, threshold=config.VELOCITY_THRESHOLD, nms_window=3
         current_group = [note_hits[0]]
         groups = []
         for i in range(1, len(note_hits)):
+            # Group nearby same-note activations and keep only the strongest hit
+            # in each cluster to reduce duplicates caused by local smearing.
             if note_hits[i][0] - current_group[-1][0] <= nms_window:
                 current_group.append(note_hits[i])
             else:
@@ -143,6 +147,8 @@ def main():
     model.load_state_dict(torch.load(config.MODEL_LOAD_PATH, map_location=device))
     print(f"Loaded model from: {config.MODEL_LOAD_PATH}")
 
+    # Rebuild the aligned dataset from source files so slice indices match the
+    # current config and the checkpoint’s expected target layout.
     list_of_midi_arrays, num_slices = get_list_of_midi_arrays()
     list_of_processed_midi = process_list_of_midi_arrays(list_of_midi_arrays)
 

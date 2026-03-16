@@ -52,7 +52,8 @@ def main():
     model.load_state_dict(torch.load(config.MODEL_LOAD_PATH, map_location=device))
     print(f"Loaded model from: {config.MODEL_LOAD_PATH}")
 
-    # Build dataset (same pipeline as training — needed for both X audio and Y labels)
+    # Rebuild the same aligned dataset pipeline used elsewhere so the viewer
+    # sees the exact audio slices and target heatmaps associated with each index.
     list_of_midi_arrays, num_slices = get_list_of_midi_arrays(save_processed_csv=False)
     list_of_processed_midi = process_list_of_midi_arrays(list_of_midi_arrays)
 
@@ -87,7 +88,8 @@ def main():
             print(f"Index {index} out of range (0-{max_index})")
             continue
 
-        # Run inference, print hits first so they're visible while viewing the heatmap
+        # Print the event table before opening the plot window so the console
+        # output remains visible while the interactive heatmap is open.
         print(f"Running inference on slice {index}...")
         output = run_inference(model, dataset, index, device)
         ground_truth = list_of_processed_midi[index]

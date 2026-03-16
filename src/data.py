@@ -19,6 +19,8 @@ from src import robert
 # Wraps robert.process_midi_file() with config values.
 # Returns (list_of_Nx3_arrays, num_slices) where each array has columns: note, loop_time, vel.
 def get_list_of_midi_arrays(save_processed_csv=True):
+    # The viewer rebuilds MIDI arrays frequently and does not need to rewrite
+    # the processed CSV on every run.
     list_of_midi_arrays, num_slices = robert.process_midi_file(
         config.MIDI_CSV_INPUT,
         config.MIDI_CSV_OUTPUT if save_processed_csv else None,
@@ -44,6 +46,8 @@ def process_list_of_midi_arrays(list_of_midi_arrays):
             drum_id = int(row[0])
             time_slice_idx = int(row[1])
             velocity = row[2]
+            # Repeated writes to the same cell overwrite earlier values, which
+            # matches the current sparse-event-to-heatmap conversion behavior.
             processed_midi[drum_id, time_slice_idx] = velocity
 
         list_of_processed_midi.append(processed_midi)
@@ -55,7 +59,8 @@ def process_list_of_midi_arrays(list_of_midi_arrays):
 # Audio is loaded once in __init__ and split into fixed-length chunks.
 class AudioSliceDataset(Dataset):
     def __init__(self, audio_path, midi_data, slice_len_sec, sr=config.SAMPLE_RATE):
-        # Load full WAV file as float32 mono (no resampling — source is already 44100 Hz)
+        # The source audio is expected to already be a single-channel 44.1 kHz
+        # render, so this dataset class does not resample or downmix.
         self.audio, _ = sf.read(audio_path, dtype="float32")
         self.slice_len = int(slice_len_sec * sr)
         self.slices = self._slice_audio()
@@ -82,6 +87,8 @@ class AudioSliceDataset(Dataset):
 # Builds contiguous train/test subsets with a time gap between them.
 def _build_contiguous_split(dataset):
     dataset_len = len(dataset)
+    # Express the holdout gap in slice units so nearby windows from the same
+    # long recording do not leak across train/test boundaries.
     gap_slices = int((config.TRAIN_TEST_GAP_MINUTES * 60) / config.SLICE_LEN_SEC)
     usable_len = dataset_len - gap_slices
     if usable_len < 2:
@@ -124,6 +131,7 @@ def build_dataloaders():
 
     train_set, test_set, split_info = _build_contiguous_split(dataset)
 
+    # Seed the train-loader shuffle so run-to-run ordering stays repeatable.
     loader_generator = torch.Generator().manual_seed(config.RANDOM_SEED)
     train_loader = DataLoader(
         train_set, batch_size=config.BATCH_SIZE, shuffle=True, generator=loader_generator

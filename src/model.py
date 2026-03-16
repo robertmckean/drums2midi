@@ -47,8 +47,12 @@ class DrumClassifier(nn.Module):
 
     def forward(self, x):
         x = self.spec_layer(x)
+        # Crop the nnAudio output to the notebook-era dimensions expected by
+        # both the encoder/decoder path and the target MIDI heatmaps.
         x = x[:, :config.STFT_BINS, :config.N_TIME_STEPS]
 
+        # Three downsampling conv stages compress time resolution before the
+        # decoder reconstructs the full note-by-time heatmap width.
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))

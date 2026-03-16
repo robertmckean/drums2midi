@@ -52,6 +52,8 @@ def process_midi_file(input_file_path, output_file_path, width, note_space, sec,
     # Scale note numbers by note_space multiplier and
     # scale loop_time from raw ticks to spectrogram time steps (0 to width-1)
     for i, row in enumerate(midi_notes):
+        # loop_time is rescaled into spectrogram-frame coordinates so each MIDI
+        # event lines up with the heatmap width used during training/inference.
         midi_notes[i, 1] = np.round((row[1]) * (width-1) / slice_ticks)
         midi_notes[i, 0] = int(row[0]) * note_space
 
@@ -87,4 +89,6 @@ def process_midi_file(input_file_path, output_file_path, width, note_space, sec,
     # Truncate notes beyond new_loop_time to match STFT output width (832 steps)
     midi_np_truncated = truncate_loop_time(midi_np_slices_3, new_loop_time)
 
+    # The returned arrays keep only the three columns the downstream heatmap
+    # builder needs: note, time index within slice, and velocity.
     return midi_np_truncated, num_slices

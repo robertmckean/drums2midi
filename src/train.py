@@ -66,6 +66,9 @@ def train():
     model_save_path = None
     best_f1_model_save_path = None
 
+    # Resume full training state if an interrupted run left a checkpoint.
+    # This is separate from the timestamped best-model files, which are the
+    # durable outputs we keep after training completes.
     if os.path.exists(config.CHECKPOINT_PATH):
         checkpoint = torch.load(config.CHECKPOINT_PATH, map_location=device)
         model.load_state_dict(checkpoint["model_state_dict"])
@@ -109,6 +112,9 @@ def train():
             optimizer.step()
 
             epoch_train_loss += loss.item()
+            # Training optimizes dense heatmap regression, but reporting treats
+            # each note/time cell as a hit/no-hit decision using the same
+            # thresholding convention as inference.
             metric_outputs = _metric_predictions(outputs)
             pred_hits = (metric_outputs > config.HIT_THRESHOLD).float()
             true_hits = (targets > config.HIT_THRESHOLD).float()
@@ -159,6 +165,8 @@ def train():
             f"R: {train_recall:.3f} / {test_recall:.3f}"
         )
 
+        # Preserve both selection criteria because the lowest-loss epoch and the
+        # highest event-level F1 epoch are not guaranteed to be the same run state.
         if avg_test_loss < best_test_loss:
             best_test_loss = avg_test_loss
             torch.save(model.state_dict(), model_save_path)
@@ -169,6 +177,8 @@ def train():
             torch.save(model.state_dict(), best_f1_model_save_path)
             print(f"  -> Saved best F1 model (test F1: {best_test_f1:.4f})")
 
+        # Save resumable training state after every epoch so interrupted runs can
+        # continue without losing optimizer, scheduler, or metric history.
         torch.save(
             {
                 "epoch": epoch,
