@@ -3,10 +3,17 @@ src/__pycache__/
 .ipynb_checkpoints/
 .vscode/
 *.code-workspace
+*.zip
+AGENTS.md
+CLAUDE.md
 
 models/
 files/
 codex_logs/
 /results/
+planning/
+docs/plans/
+tools/
+tmp_chatgpt_context_*/
 
 .claude/

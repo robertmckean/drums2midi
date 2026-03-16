@@ -1,7 +1,7 @@
 # Drum Audio to MIDI
 
 This workspace is the release-oriented Python version of the original working
-notebook `DrumMidi_Working_LOCAL_00_GM.ipynb`.
+notebook `notebooks/DrumMidi_Working_LOCAL_00_GM.ipynb`.
 
 The goal of this project is narrow: take recorded drum audio, convert it into a
 MIDI-style heatmap, and extract note / time / velocity events with the original
@@ -57,9 +57,17 @@ WAV audio
 - `src/train.py`: training loop, checkpointing, loss/F1 plots
 - `src/infer.py`: CLI inference and saved comparison plots
 - `src/view.py`: interactive slice viewer
+- `notebooks/`: original working notebook preserved for project provenance
+- `examples/`: curated sample training and inference visuals for quick review
 - `models/`: saved checkpoints
 - `files/`: generated plots and inference images
 - `changelogs/`: historical notes copied from the earlier repo
+
+## Examples
+
+Representative visuals are included under `examples/` for fast review without
+requiring local model or data setup. These are curated copies of training and
+inference outputs from the local working environment.
 
 ## Paths And Data
 
@@ -74,9 +82,13 @@ configured in `config.py`:
 
 Important:
 
+- training data and checkpoints exist locally, but are not included in this
+  repository
 - this project is not self-contained without those local source files
 - `config.py` must point to valid audio and MIDI paths on the machine running it
 - `src/data.py` uses `reaper_GM_audio_1.wav` first and falls back to `reaper_GM_audio.wav`
+- the current dataset is limited and primarily represents a known drum kit
+- broader generalization would require a more diverse dataset
 
 ## Environment
 
@@ -104,8 +116,15 @@ same inference behavior in the future, you need:
 - the saved checkpoint file referenced by `MODEL_LOAD_PATH`
 - a compatible Python environment, ideally matching `drum310`
 
+This repository preserves the implementation and current validated baseline, but
+not the full local operating context by itself. The local dataset is usable for
+the current project scope, but it is not broad enough to support strong claims
+about generalization beyond the known training distribution.
+
 See `docs/results/reproducibility_20260316.md` for the exact checklist and
 restore steps.
+
+For a concise pipeline walkthrough, see `docs/system_architecture.md`.
 
 ## Running
 
