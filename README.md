@@ -25,7 +25,7 @@ behavior, while preserving a few practical improvements from the later refactor:
 
 The active checkpoint in this workspace is:
 
-- `models/drum_classifier_20260315_210518_best.pth`
+- `models/drum_classifier_20260315_223300_best.pth`
 
 This checkpoint matches the current `src/model.py` architecture in this
 workspace. The model is the original narrower encoder/decoder CNN with:
@@ -93,6 +93,19 @@ Install requirements if needed:
 ```powershell
 pip install -r requirements.txt
 ```
+
+## Reproducibility
+
+Git alone is not enough to reproduce the current best results. To recreate the
+same inference behavior in the future, you need:
+
+- this repository at the current commit
+- the external source data folder configured in `config.py`
+- the saved checkpoint file referenced by `MODEL_LOAD_PATH`
+- a compatible Python environment, ideally matching `drum310`
+
+See `docs/results/reproducibility_20260316.md` for the exact checklist and
+restore steps.
 
 ## Running
 
